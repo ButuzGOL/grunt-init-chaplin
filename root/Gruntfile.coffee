@@ -29,8 +29,8 @@ module.exports = (grunt) ->
 
       module:
         files: [
-          dest: 'temp/scripts'
-          cwd: 'temp/scripts-amd'
+          dest: 'temp/app'
+          cwd: 'temp/app-amd'
           expand: true
           src: [
             '**/*'
@@ -50,6 +50,11 @@ module.exports = (grunt) ->
             '!*.hbs'{% } else if (templateLanguage === 'haml') { %}
             '!*.haml'{% } %}
           ]
+        ,
+          dest: 'temp/images'
+          cwd: 'src/app/assets/images'
+          expand: true
+          src: ['**/*']
         ]
 {% if (bootstrap && (preprocessor === 'none' || preprocessor === 'stylus')) { %}
         options:
@@ -67,7 +72,7 @@ module.exports = (grunt) ->
           cwd: 'temp'
           expand: true
           src: [
-            '**/*.{html,txt,png}',
+            '**/*.{html,txt}',
             'fonts/**/*',
             'images/**/*',
           ]
@@ -91,9 +96,9 @@ module.exports = (grunt) ->
 
         files: [
           expand: true
-          cwd: 'src/scripts'
+          cwd: 'src/app'
           src: '**/*.coffee'
-          dest: 'temp/scripts'
+          dest: 'temp/app'
           ext: '.js'
         ]
 {% if (templateLanguage === 'handlebars') { %}
@@ -107,9 +112,9 @@ module.exports = (grunt) ->
 
         files: [
           expand: true
-          cwd: 'src/templates'
+          cwd: 'src/app/views/templates'
           src: '**/*.hbs'
-          dest: 'temp/templates'
+          dest: 'temp/app/views/templates'
           ext: '.js'
         ]
 {% } else if (templateLanguage === 'haml') { %}
@@ -192,11 +197,11 @@ module.exports = (grunt) ->
     stylus:
       compile:
         files:
-          'temp/styles/main.css': 'src/styles/**/*.styl'
+          'temp/styles/main.css': 'src/app/assets/styles/**/*.styl'
 
       build:
         files:
-          'temp/styles/main.css': 'src/styles/**/*.styl'
+          'temp/styles/main.css': 'src/app/assets/styles/**/*.styl'
 
         options:
           compress: true
@@ -206,8 +211,8 @@ module.exports = (grunt) ->
     urequire:
       convert:
         template: 'AMD'
-        bundlePath: 'temp/scripts/'
-        outputPath: 'temp/scripts-amd/'
+        bundlePath: 'temp/app/'
+        outputPath: 'temp/app-amd/'
 
     # Script lint
     # -----------
@@ -215,7 +220,7 @@ module.exports = (grunt) ->
       gruntfile: 'Gruntfile.coffee'
       src: [
         'src/**/*.coffee'
-        '!src/scripts/vendor/**/*'
+        '!src/app/vendor/**/*'
       ]
 
     # Webserver
@@ -270,18 +275,14 @@ module.exports = (grunt) ->
       compile:
         options:
           out: 'build/scripts/main.js'
-          include: _(grunt.file.expandMapping(['main*', 'controllers/**/*'], ''
-            cwd: 'src/scripts/'
+          include: _(grunt.file.expandMapping(['main*', 'controllers/**/*.coffee'], ''
+            cwd: 'src/app/'
             rename: (base, path) -> path.replace /\.coffee$/, ''
           )).pluck 'dest'
-          mainConfigFile: 'temp/scripts/main.js'
-          baseUrl: './temp/scripts'
+          mainConfigFile: 'temp/app/main.js'
+          baseUrl: './temp/app'
           keepBuildDir: true
           almond: true
-          replaceRequireScript: [
-            files: ['temp/index.html'],
-            module: 'main'
-          ]
           insertRequire: ['main']
           optimize: 'uglify2'
 
@@ -296,13 +297,13 @@ module.exports = (grunt) ->
     # -----
     watch:
       coffee:
-        files: 'src/scripts/**/*.coffee'
+        files: 'src/app/**/*.coffee'
         tasks: 'script'
         options:
           interrupt: true
 {% if (templateLanguage === 'handlebars') { %}
       handlebars:
-        files: 'src/templates/**/*.hbs'
+        files: 'src/app/views/templates/**/*.hbs'
         tasks: 'handlebars:compile'
         options:
           interrupt: true
@@ -332,11 +333,17 @@ module.exports = (grunt) ->
           interrupt: true
 {% } else if (preprocessor === 'stylus') { %}
       stylus:
-        files: 'src/styles/**/*.styl'
+        files: 'src/app/assets/styles/**/*.styl'
         tasks: 'stylus:compile'
         options:
           interrupt: true
 {% } %}
+
+    # Usemin    
+    # -----   
+    usemin:   
+      html: 'build/index.html'
+
   # Dependencies
   # ============
   for name of pkg.devDependencies when name.substring(0, 6) is 'grunt-'
@@ -401,9 +408,10 @@ module.exports = (grunt) ->
     'compass:build'{% } else if (preprocessor === 'less') { %}
     'less:build'{% } else if (preprocessor === 'stylus') { %}
     'stylus:build'{% } %}
-    'requirejs:compile'
     'copy:build'
+    'requirejs:compile'
     'requirejs:css'
     'mincss:compress'
+    'usemin'
     'htmlmin'
   ]

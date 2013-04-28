@@ -65,7 +65,7 @@ exports.template = function(grunt, init, done) {
     // Remove files that aren't of the language requested.
     var lang = props.language === 'coffee' ? 'js' : 'coffee';
     files = _.omit(files, function(value, key) {
-      if (/^src\/scripts\/vendor/.test(key)) return false;
+      if (/^src\/app\/vendor/.test(key)) return false;
       return _.endsWith(key, lang);
     });
 
@@ -115,6 +115,7 @@ exports.template = function(grunt, init, done) {
       'grunt-requirejs': '0.3.x',
       'grunt-contrib-mincss': '0.4.0rc7',
       'grunt-contrib-htmlmin': '0.1.1rc7',
+      'grunt-usemin': '0.1.11',
       'grunt-bower-task': '0.1.x',
       'grunt-urequire': 'git://github.com/aearly/grunt-urequire.git',
       // grunt-urequire requires lodash incorrectly,
@@ -152,7 +153,7 @@ exports.template = function(grunt, init, done) {
 
     if (props.templateLanguage !== 'haml') {
       // Remove the HAML runtime.
-      delete files['src/scripts/lib/haml.coffee'];
+      delete files['src/app/lib/haml.coffee'];
       delete files['src/scripts/lib/haml.js'];
     }
 
